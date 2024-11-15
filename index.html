@@ -185,6 +185,24 @@
                     loseStatsElement.innerText += ` | Try: ${tryCount}`;
                 }
             }
+
+            function playAgain() {
+                document.getElementById('win').style.display = 'none';
+                document.getElementById('lose').style.display = 'none';
+                document.getElementById('artist-picking').style.display = 'flex';
+
+                currentDuration = 1;
+                tryCount = 0;
+
+                document.getElementById('duration').innerText = 'Current Duration: 1 second';
+                document.getElementById('try').innerText = 'Tries: 0';
+                document.getElementById('song-options').innerHTML = '<option>Loading...</option>';
+                document.getElementById('result').innerText = '';
+                document.getElementById('duration-progress').style.setProperty('--width', '0rem');
+                document.getElementById('end-time').innerText = '0:01';
+                document.getElementById('score').innerText = '';
+                document.getElementById('artist-input').value = '';
+            }
         </script>
         <div id="artist-picking">
             <span class="title">Enter an Artist</span>
@@ -237,6 +255,7 @@
             </p>
             <p id="win-stats"></p>
             <p id="score"></p>
+            <button onclick="playAgain()">Play Again</button>
         </div>
         <div id="lose" style="display: none;">
             <span class="title">You Lose!</span>
@@ -247,6 +266,7 @@
                 <span class="artist"></span>
             </p>
             <p id="lose-stats"></p>
+            <button onclick="playAgain()">Play Again</button>
         </div>
     </body>
 </html>

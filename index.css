@@ -138,3 +138,11 @@ span {
     color: #007bff;
     font-weight: bold;
 }
+
+#win button, #lose button {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
