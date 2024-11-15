@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Song Guesser Game</title>
+        <script src="index.js"></script>
+        <link rel="stylesheet" href="index.css">
+    </head>
+    <body>
+        <script>
+            let audio;
+            let song;
+
+            let songOptions
+
+            let playButton;
+            let pauseButton;
+            let durationElement;
+            let tryElement;
+
+            let currentDuration = 1;
+            let tryCount = 0;
+
+            let durationOptions = [1, 2, 5, 10, 15, 30, 60];
+
+            window.onload = async () => {
+                songOptions = await getArtistSongs('LCD Soundsystem');
+                song = pickRandomSong(songOptions);
+                audio = await getAudio(song);
+
+                // On audio pause
+                audio.onpause = () => {
+                    playButton.style.display = 'block';
+                    pauseButton.style.display = 'none';
+                };
+
+                // On audio play
+                audio.onplay = () => {
+                    playButton.style.display = 'none';
+                    pauseButton.style.display = 'block';
+                };
+
+                const progress = document.getElementById('duration-progress');
+
+                audio.addEventListener('timeupdate', () => {
+                    const currentTime = audio.currentTime;
+                    const progressWidth = (currentTime / currentDuration) * 100;
+                    progress.style.setProperty('--width', `${progressWidth}%`);
+                });
+
+                audio = cropAudio(audio, 1);
+
+                playButton = document.getElementById('play-btn');
+                pauseButton = document.getElementById('pause-btn');
+                durationElement = document.getElementById('duration');
+                tryElement = document.getElementById('try');
+
+                populateSongOptions();
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('main').style.display = 'flex';
+            };
+
+            function formatTime(time) {
+                const minutes = Math.floor(time / 60);
+                const seconds = Math.floor(time % 60);
+                return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }
+
+            function play() {
+                audio.currentTime = 0;
+                audio.play();
+            }
+
+            function pause() {
+                audio.pause();
+            }
+
+            function populateSongOptions() {
+                const songOptionsElement = document.getElementById('song-options');
+                songOptionsElement.innerHTML = '';
+                songOptions.forEach((song, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.innerText = song.name;
+                    songOptionsElement.appendChild(option);
+                });
+            }
+
+            function guess() {
+                const songOptionsElement = document.getElementById('song-options');
+                const selectedSongIndex = songOptionsElement.value;
+                const selectedSong = songOptions[selectedSongIndex];
+
+                const resultElement = document.getElementById('result');
+
+                if (selectedSong.name === song.name) {
+                    gameOver(true);
+                } else {
+                    tryCount++;
+                    tryElement.innerText = `Tries: ${tryCount}`;
+                    resultElement.innerText = 'Wrong Guess!';
+                }
+            }
+
+            function nextDuration() {
+                if (currentDuration === durationOptions[durationOptions.length - 1]) {
+                    gameOver(false);
+                    return;
+                }
+                currentDuration = durationOptions[(durationOptions.indexOf(currentDuration) + 1) % durationOptions.length];
+                audio = cropAudio(audio, currentDuration);
+                durationElement.innerText = `Current Duration: ${currentDuration} second`;
+                durationElement.innerText += currentDuration === 1 ? '' : 's';
+
+                const progress = document.getElementById('duration-progress');
+                progress.style.setProperty('--width', '0%');
+
+                const endTimeElement = document.getElementById('end-time');
+                endTimeElement.innerText = formatTime(currentDuration);
+
+                const resultElement = document.getElementById('result');
+                resultElement.innerText = '';
+
+                tryCount = 0;
+                tryElement.innerText = `Tries: ${tryCount}`;
+            }
+
+            function gameOver(won) {
+                const winElement = document.getElementById('win');
+                const loseElement = document.getElementById('lose');
+
+                document.getElementById('main').style.display = 'none';
+
+                if (won) {
+                    winElement.style.display = 'flex';
+                    loseElement.style.display = 'none';
+
+                    const winSongElement = document.getElementById('win-song');
+                    const songElement = winSongElement.querySelector('.song');
+                    const artistElement = winSongElement.querySelector('.artist');
+                    songElement.innerText = song.name;
+                    artistElement.innerText = song.artistName ? song.artistName : '';
+
+                    const winStatsElement = document.getElementById('win-stats');
+                    winStatsElement.innerText = `Duration: ${currentDuration} second`;
+                    winStatsElement.innerText += currentDuration === 1 ? '' : 's';
+                    winStatsElement.innerText += ` | Try: ${tryCount}`;
+
+                    let durationIndex = durationOptions.indexOf(currentDuration);
+                    const maxScore = 100 * durationOptions.length
+                    const score = maxScore - (durationIndex * 100) - (tryCount * 10);
+                    const scoreElement = document.getElementById('score');
+                    scoreElement.innerText = `Score: ${score} / ${maxScore}`;
+                } else {
+                    winElement.style.display = 'none';
+                    loseElement.style.display = 'flex';
+
+                    const loseSongElement = document.getElementById('lose-song');
+                    const songElement = loseSongElement.querySelector('.song');
+                    const artistElement = loseSongElement.querySelector('.artist');
+                    songElement.innerText = song.name;
+                    artistElement.innerText = song.artistName ? song.artistName : '';
+
+                    const loseStatsElement = document.getElementById('lose-stats');
+                    loseStatsElement.innerText = `Duration: ${currentDuration} second`;
+                    loseStatsElement.innerText += currentDuration === 1 ? '' : 's';
+                    loseStatsElement.innerText += ` | Try: ${tryCount}`;
+                }
+            }
+        </script>
+        <div id="loading">
+            <span>Loading...</span>
+        </div>
+        <div id="main" style="display: none;">
+            <span class="title">Song Guesser Game!</span>
+            <div class="info">
+                <span id="duration">Current Duration: 1 second</span>
+                <span id="try">Tries: 0</span>
+            </div>
+            <div class="audio-player">
+                <button onclick="play()" id="play-btn">Play</button>
+                <button onclick="pause()" id="pause-btn" style="display: none;">Pause</button>
+                <div class="duration">
+                    <span class="time">0:00</span>
+                    <div class="duration-bar">
+                        <div id="duration-progress" style="--width: 0rem"></div>
+                    </div>
+                    <span class="time" id="end-time">0:01</span>
+                </div>
+            </div>
+            <div class="guess">
+                <span>Guess the song name!</span>
+                <div class="guess-input">
+                    <select id="song-options">
+                        <option>Loading...</option>
+                    </select>
+                    <button onclick="guess()">Guess</button>
+                </div>
+                <span id="result"></span>
+            </div>
+            <div class="actions">
+                <button onclick="nextDuration()">Add More Duration</button>
+            </div>
+        </div>
+        <div id="win" style="display: none;">
+            <span class="title">You Win!</span>
+            <p id="win-song">
+                Song:
+                <span class="song"></span>
+                by
+                <span class="artist"></span>
+            </p>
+            <p id="win-stats"></p>
+            <p id="score"></p>
+        </div>
+        <div id="lose" style="display: none;">
+            <span class="title">You Lose!</span>
+            <p id="lose-song">
+                Song:
+                <span class="song"></span>
+                by
+                <span class="artist"></span>
+            </p>
+            <p id="lose-stats"></p>
+        </div>
+    </body>
+</html>
