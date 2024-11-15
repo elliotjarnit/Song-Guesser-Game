@@ -4,7 +4,7 @@ body {
     font-family: 'Roboto', sans-serif;
 }
 
-#main, #win, #lose, #loading {
+#main, #win, #lose, #loading, #artist-picking {
     width: 100vw;
     height: 100vh;
     display: flex;
@@ -65,14 +65,14 @@ body {
     gap: 0.5rem;
 }
 
-.guess-input {
+.guess-input, .artist-input {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 1rem;
 }
 
-.guess-input button {
+.guess-input button, .artist-input button {
     font-size: 1rem;
     padding: 0 1rem;
     height: 2.5rem;
@@ -81,7 +81,7 @@ body {
     cursor: pointer;
 }
 
-#song-options {
+#song-options, #artist-input {
     width: 10rem;
     height: 2.5rem;
     border: none;

@@ -9,6 +9,7 @@
         <script>
             let audio;
             let song;
+            let artist;
 
             let songOptions
 
@@ -22,8 +23,25 @@
 
             let durationOptions = [1, 2, 5, 10, 15, 30, 60];
 
-            window.onload = async () => {
-                songOptions = await getArtistSongs('LCD Soundsystem');
+            async function pickArtist() {
+                artist = document.getElementById('artist-input').value;
+                if (!artist) {
+                    alert('Please enter an artist name!');
+                    return;
+                }
+                document.getElementById('artist-picking').style.display = 'none';
+
+                const artistPickingElement = document.getElementById('artist-picking');
+                artistPickingElement.style.display = 'none';
+
+                await load();
+            }
+
+            async function load() {
+                const loadingElement = document.getElementById('loading');
+                loadingElement.style.display = 'flex';
+
+                songOptions = await getArtistSongs(artist);
                 song = pickRandomSong(songOptions);
                 audio = await getAudio(song);
 
@@ -168,7 +186,14 @@
                 }
             }
         </script>
-        <div id="loading">
+        <div id="artist-picking">
+            <span class="title">Enter an Artist</span>
+            <div class="artist-input">
+                <input type="text" id="artist-input" placeholder="Enter an artist name">
+                <button onclick="pickArtist()">Pick</button>
+            </div>
+        </div>
+        <div id="loading" style="display: none;">
             <span>Loading...</span>
         </div>
         <div id="main" style="display: none;">
